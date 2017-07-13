@@ -147,7 +147,7 @@ namespace EasyEncWS
             {
                 using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("SELECT HashedFilename,IV,OriginalFilename,OriginalFileExt, EncKey FROM [Files] WHERE Owner = @owner AND OriginalFilename + OriginalFileExt = @filename AND SharedGroups = @share"))
+                    using (SqlCommand cmd = new SqlCommand("SELECT HashedFilename,IV,OriginalFilename,OriginalFileExt, EncKey, data FROM [Files] WHERE Owner = @owner AND OriginalFilename + OriginalFileExt = @filename AND SharedGroups = @share"))
                     {
                         cmd.Parameters.AddWithValue("@owner", owner);
                         cmd.Parameters.AddWithValue("@filename", filename);
@@ -169,6 +169,7 @@ namespace EasyEncWS
                                     rsa.FromXmlString(pubkey);
                                     byte[] reenckey = rsa.Encrypt(deckey, false);
                                     fi.Add(Convert.ToBase64String(reenckey));
+									fi.Add(Convert.ToBase64String(rd.GetBytes(5)));
                                 }
                             }
                             return fi;
