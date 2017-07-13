@@ -195,11 +195,11 @@ namespace EasyEncWS
             }
         }
         [WebMethod]
-        public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV)
+        public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] filebuffer)
         {
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,SharedGroups,Owner,OriginalFilename,OriginalFileExt,EncKey,IV) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV)"))
+                using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,SharedGroups,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
                 {
                     cmd.Parameters.AddWithValue("@filename", filename);
                     cmd.Parameters.AddWithValue("@size", size);
@@ -209,6 +209,7 @@ namespace EasyEncWS
                     cmd.Parameters.AddWithValue("@originalfileext", originalfileext);
                     cmd.Parameters.AddWithValue("@key", encryptedkey);
                     cmd.Parameters.AddWithValue("@IV", IV);
+					cmd.Parameters.AddWithValue("@data", filebuffer);
                     cmd.Connection = con;
                     cmd.Connection.Open();
                     cmd.ExecuteNonQuery();

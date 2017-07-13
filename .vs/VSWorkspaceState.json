@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\EasyEncWS",
+    "\\EasyEncWS\\EasyEncWS"
   ],
-  "SelectedNode": "\\README.md",
+  "SelectedNode": "\\EasyEncWS\\EasyEncWS\\MainService.asmx.cs",
   "PreviewInSolutionExplorer": false
 }
