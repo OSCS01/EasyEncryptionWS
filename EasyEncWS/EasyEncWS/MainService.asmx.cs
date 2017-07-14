@@ -169,7 +169,7 @@ namespace EasyEncWS
                                     rsa.FromXmlString(pubkey);
                                     byte[] reenckey = rsa.Encrypt(deckey, false);
                                     fi.Add(Convert.ToBase64String(reenckey));
-									fi.Add(Convert.ToBase64String(rd.GetBytes(5)));
+                                    fi.Add(Convert.ToBase64String(getFileData(rd)));
                                 }
                             }
                             return fi;
@@ -177,6 +177,30 @@ namespace EasyEncWS
                     }
                 }
             }
+        }
+
+        //Honestly have no idea if this will work.
+        public byte[] getFileData(SqlDataReader rd)
+        {
+            int ordinal = rd.GetOrdinal("data");
+
+            if (!rd.IsDBNull(ordinal))
+            {
+                long size = rd.GetBytes(ordinal, 0, null, 0, 0);
+                byte[] values = new byte[size];
+                int bufferSize = 1024;
+                long bytesRead = 0;
+                int curPos = 0;
+
+                while (bytesRead < size)
+                {
+                    bytesRead += rd.GetBytes(ordinal, curPos, values, curPos, bufferSize);
+                    curPos += bufferSize;
+                }
+                return values;
+            }
+            else
+                return null;
         }
 
         public void addLogs(string filename, string owner, string downloader, string group)
@@ -196,7 +220,7 @@ namespace EasyEncWS
             }
         }
         [WebMethod]
-        public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] filebuffer)
+        public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
         {
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
             {
@@ -210,7 +234,7 @@ namespace EasyEncWS
                     cmd.Parameters.AddWithValue("@originalfileext", originalfileext);
                     cmd.Parameters.AddWithValue("@key", encryptedkey);
                     cmd.Parameters.AddWithValue("@IV", IV);
-					cmd.Parameters.AddWithValue("@data", filebuffer);
+					cmd.Parameters.AddWithValue("@data", fileData);
                     cmd.Connection = con;
                     cmd.Connection.Open();
                     cmd.ExecuteNonQuery();
