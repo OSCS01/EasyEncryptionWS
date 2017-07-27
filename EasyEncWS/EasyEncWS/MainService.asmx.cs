@@ -54,7 +54,7 @@ namespace EasyEncWS
 
         public DataTable retrieveLogs(string name, string owner, string group)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT * FROM AccessLogs WHERE OriginalFilename = @name AND Owner = @owner AND sharedGroup = @group"))
                 {
@@ -90,7 +90,7 @@ namespace EasyEncWS
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(csp))
             {
                 string enckey = "";
-                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT EncKey FROM [Files] WHERE Owner = @Owner AND OriginalFilename + OriginalFileExt = @filename AND SharedGroups = @group"))
                     {
@@ -119,9 +119,9 @@ namespace EasyEncWS
 
         public  string getUserPubKey(string user)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT PubKey FROM [User] WHERE Username = @user"))
+                using (SqlCommand cmd = new SqlCommand("SELECT PubKey FROM [Users] WHERE username = @user"))
                 {
                     cmd.Parameters.AddWithValue("@user", user);
                     cmd.Connection = con;
@@ -145,7 +145,7 @@ namespace EasyEncWS
             csp.KeyContainerName = "EEKeys";
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(csp))
             {
-                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT HashedFilename,IV,OriginalFilename,OriginalFileExt, EncKey, data FROM [Files] WHERE Owner = @owner AND OriginalFilename + OriginalFileExt = @filename AND SharedGroups = @share"))
                     {
@@ -205,7 +205,7 @@ namespace EasyEncWS
 
         public void addLogs(string filename, string owner, string downloader, string group)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO AccessLogs (OriginalFilename,Owner,UserDownload,sharedGroup) VALUES (@filename,@owner,@user,@group)"))
                 {
@@ -222,7 +222,7 @@ namespace EasyEncWS
         [WebMethod]
         public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,SharedGroups,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
                 {
@@ -244,7 +244,7 @@ namespace EasyEncWS
 
         public DataTable retrieveFiles(string username)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["EEDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT OriginalFilename + OriginalFileExt AS [Filename],Size,SharedGroups,Owner FROM Files WHERE Owner = @owner"))
                 {
@@ -288,6 +288,5 @@ namespace EasyEncWS
                 return sw.ToString();
             }
         }
-
     }
 }
