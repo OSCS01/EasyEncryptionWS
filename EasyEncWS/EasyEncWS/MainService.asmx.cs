@@ -261,6 +261,23 @@ namespace EasyEncWS
             }
         }
 
+        [WebMethod]
+        public int retrieveNotification(string username)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT (SELECT count(DISTINCT OriginalFilename) FROM Files WHERE Owner = @owner) - (SELECT count(DISTINCT OriginalFilename) FROM AccessLogs WHERE Owner = @owner)"))
+                {
+                    cmd.Parameters.AddWithValue("@owner", username);
+                    cmd.Connection = con;
+                    cmd.Connection.Open();
+                    SqlDataReader rd = cmd.ExecuteReader();
+                    rd.Read();
+                    return rd.GetInt32(0);                    
+                }
+            }
+        }
+
         public DataTable retrieveFiles(string username)
         {
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
