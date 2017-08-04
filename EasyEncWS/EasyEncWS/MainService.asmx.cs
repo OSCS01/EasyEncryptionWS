@@ -56,7 +56,7 @@ namespace EasyEncWS
         public List<string> getGroups(string username)
         {
             List<string> grouplist = new List<string>();
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT GroupName FROM UsersGroups WHERE username = @user"))
                 {
@@ -79,7 +79,7 @@ namespace EasyEncWS
         [WebMethod]
         public void DeleteFile(string name, string owner, string group, string user)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("DELETE FROM AccessLogs WHERE OriginalFilename = @name AND Owner = @owner AND sharedGroup = @group"))
                 {
@@ -97,7 +97,7 @@ namespace EasyEncWS
 
         public DataTable retrieveLogs(string name, string owner, string group)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT * FROM AccessLogs WHERE OriginalFilename = @name AND Owner = @owner AND sharedGroup = @group"))
                 {
@@ -133,7 +133,7 @@ namespace EasyEncWS
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(csp))
             {
                 string enckey = "";
-                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT EncKey FROM [Files] WHERE Owner = @Owner AND OriginalFilename + OriginalFileExt = @filename AND sharedGroup = @group"))
                     {
@@ -162,7 +162,7 @@ namespace EasyEncWS
 
         public string getUserPubKey(string user)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT PubKey FROM [Users] WHERE username = @user"))
                 {
@@ -188,9 +188,9 @@ namespace EasyEncWS
             csp.KeyContainerName = "EEKeys";
             using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(csp))
             {
-                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("SELECT HashedFilename,IV,OriginalFilename,OriginalFileExt, EncKey, data FROM [Files] WHERE Owner = @owner AND OriginalFilename + OriginalFileExt = @filename AND sharedGroup = @share"))
+                    using (SqlCommand cmd = new SqlCommand("SELECT IV,OriginalFilename,OriginalFileExt, EncKey, data FROM [Files] WHERE Owner = @owner AND OriginalFilename + OriginalFileExt = @filename AND sharedGroup = @share"))
                     {
                         cmd.Parameters.AddWithValue("@owner", owner);
                         cmd.Parameters.AddWithValue("@filename", filename);
@@ -206,8 +206,7 @@ namespace EasyEncWS
                                     fi.Add(rd.GetString(0));
                                     fi.Add(rd.GetString(1));
                                     fi.Add(rd.GetString(2));
-                                    fi.Add(rd.GetString(3));
-                                    string enckey = rd.GetString(4);
+                                    string enckey = rd.GetString(3);
                                     byte[] deckey = rsa.Decrypt(Convert.FromBase64String(enckey), false);
                                     rsa.FromXmlString(pubkey);
                                     byte[] reenckey = rsa.Encrypt(deckey, false);
@@ -248,7 +247,7 @@ namespace EasyEncWS
 
         public void addLogs(string filename, string owner, string downloader, string group)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("INSERT INTO AccessLogs (OriginalFilename,Owner,UserDownload,sharedGroup) VALUES (@filename,@owner,@user,@group)"))
                 {
@@ -263,15 +262,14 @@ namespace EasyEncWS
             }
         }
         [WebMethod]
-        public bool uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
+        public bool uploadFiles(long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
         {
             try
             {
-                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
                 {
-                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,sharedGroup,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (Size,sharedGroup,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
                     {
-                        cmd.Parameters.AddWithValue("@filename", filename);
                         cmd.Parameters.AddWithValue("@size", size);
                         cmd.Parameters.AddWithValue("@group", group);
                         cmd.Parameters.AddWithValue("@owner", owner);
@@ -296,7 +294,7 @@ namespace EasyEncWS
         [WebMethod]
         public int retrieveNotification(string username)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT (SELECT count(DISTINCT OriginalFilename) FROM Files WHERE Owner = @owner) - (SELECT count(DISTINCT OriginalFilename) FROM AccessLogs WHERE Owner = @owner)"))
                 {
@@ -310,9 +308,31 @@ namespace EasyEncWS
             }
         }
 
+        [WebMethod]
+        public bool getIsDownloaded(string filename, string username,string group)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT count(*) FROM AccessLogs WHERE UserDownload = @owner AND OriginalFilename = @filename AND sharedGroup = @group")) 
+                {
+                    cmd.Parameters.AddWithValue("@owner",username);
+                    cmd.Parameters.AddWithValue("@filename",filename);
+                    cmd.Parameters.AddWithValue("@group",group);
+                    cmd.Connection = con;
+                    cmd.Connection.Open();
+                    SqlDataReader rd = cmd.ExecuteReader();
+                    rd.Read();
+                    if (rd.GetInt32(0) > 0)
+                        return true;
+                    else
+                        return false;
+                }
+            }
+        }
+
         public DataTable retrieveFiles(string username)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["Bob"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT OriginalFilename + OriginalFileExt AS [Filename],Size,sharedGroup,Owner FROM Files WHERE Owner = @owner OR sharedGroup IN (SELECT GroupName From UsersGroups WHERE username = @owner)"))
                 {
