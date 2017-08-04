@@ -263,25 +263,33 @@ namespace EasyEncWS
             }
         }
         [WebMethod]
-        public void uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
+        public bool uploadFiles(string filename, long size, string group, string owner, string originalfilename, string originalfileext, string encryptedkey, string IV, byte[] fileData)
         {
-            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            try
             {
-                using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,sharedGroup,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
+                using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
                 {
-                    cmd.Parameters.AddWithValue("@filename", filename);
-                    cmd.Parameters.AddWithValue("@size", size);
-                    cmd.Parameters.AddWithValue("@group", group);
-                    cmd.Parameters.AddWithValue("@owner", owner);
-                    cmd.Parameters.AddWithValue("@originalfilename", originalfilename);
-                    cmd.Parameters.AddWithValue("@originalfileext", originalfileext);
-                    cmd.Parameters.AddWithValue("@key", encryptedkey);
-                    cmd.Parameters.AddWithValue("@IV", IV);
-                    cmd.Parameters.AddWithValue("@data", fileData);
-                    cmd.Connection = con;
-                    cmd.Connection.Open();
-                    cmd.ExecuteNonQuery();
+                    using (SqlCommand cmd = new SqlCommand("INSERT INTO Files (HashedFilename,Size,sharedGroup,Owner,OriginalFilename,OriginalFileExt,EncKey,IV, data) VALUES (@filename,@size,@group,@owner,@originalfilename,@originalfileext,@key,@IV,@data)"))
+                    {
+                        cmd.Parameters.AddWithValue("@filename", filename);
+                        cmd.Parameters.AddWithValue("@size", size);
+                        cmd.Parameters.AddWithValue("@group", group);
+                        cmd.Parameters.AddWithValue("@owner", owner);
+                        cmd.Parameters.AddWithValue("@originalfilename", originalfilename);
+                        cmd.Parameters.AddWithValue("@originalfileext", originalfileext);
+                        cmd.Parameters.AddWithValue("@key", encryptedkey);
+                        cmd.Parameters.AddWithValue("@IV", IV);
+                        cmd.Parameters.AddWithValue("@data", fileData);
+                        cmd.Connection = con;
+                        cmd.Connection.Open();
+                        cmd.ExecuteNonQuery();
+                        return true;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                return false;
             }
         }
 
