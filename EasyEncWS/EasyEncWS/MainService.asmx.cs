@@ -45,6 +45,36 @@ namespace EasyEncWS
             }
             return fileitem;
         }
+        [WebMethod]
+        public bool loginValidation(string username, string password)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(password);
+            SHA256Managed alg = new SHA256Managed();
+            byte[] hash = alg.ComputeHash(data);
+            string hashString = string.Empty;
+            foreach (byte x in hash)
+            {
+                hashString += String.Format("{0:x2}", x);
+            }
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            {
+                SqlDataAdapter sda = new SqlDataAdapter("Select Count(*) From Users where username ='" + username + "' and pass = '" + password + "'", con);
+                DataTable dt = new DataTable();
+                sda.Fill(dt);
+                if (dt.Rows[0][0].ToString() == "1")
+                {
+                    return true;
+
+                }
+                else
+                {
+                    return false;
+                }
+
+
+            }
+
+        }
 
         [WebMethod]
         public string getLogs(string name, string owner, string group)
