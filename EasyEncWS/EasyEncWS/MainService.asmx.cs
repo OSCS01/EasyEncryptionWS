@@ -58,7 +58,7 @@ namespace EasyEncWS
             }
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
-                SqlDataAdapter sda = new SqlDataAdapter("Select Count(*) From Users where username ='" + username + "' and pass = '" + password + "'", con);
+                SqlDataAdapter sda = new SqlDataAdapter("Select Count(*) From Users where username ='" + username + "' and pass = '" + password + "'",con);
                 DataTable dt = new DataTable();
                 sda.Fill(dt);
                 if (dt.Rows[0][0].ToString() == "1")
@@ -75,6 +75,7 @@ namespace EasyEncWS
             }
 
         }
+        
 
         [WebMethod]
         public string getLogs(string name, string owner, string group)
