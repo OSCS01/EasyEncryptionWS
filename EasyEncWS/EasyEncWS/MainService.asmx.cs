@@ -102,7 +102,7 @@ namespace EasyEncWS
         {
             SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString);
             con.Open();
-            SqlCommand cmd1 = new SqlCommand("INSERT INTO Groups(GroupName) VALUES('" + GroupName + "')",con);
+            SqlCommand cmd1 = new SqlCommand("INSERT INTO Groups(GroupName, owner) VALUES('" + GroupName + "','" + username+"')",con);
             cmd1.ExecuteNonQuery();
             SqlCommand cmd2 = new SqlCommand("INSERT INTO UsersGroups(username, GroupName) VALUES('" + username + "' , '" + GroupName + "')",con);
             cmd2.ExecuteNonQuery();
@@ -165,13 +165,13 @@ namespace EasyEncWS
             }
         }
         [WebMethod]
-        public DataTable displayGroupMem(string group)
+        public DataTable displayGroupMem(string GroupName)
         {
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand("SELECT username FROM UsersGroups WHERE GroupName = @group"))
                 {
-                    cmd.Parameters.AddWithValue("@group", group);
+                    cmd.Parameters.AddWithValue("@group", GroupName);
                     cmd.Connection = con;
                     cmd.Connection.Open();
                     using (SqlDataAdapter sda = new SqlDataAdapter())
@@ -187,9 +187,9 @@ namespace EasyEncWS
 
         }
         [WebMethod]
-        public string retrieveGroupMem(string group)
+        public string retrieveGroupMem(string GroupName)
         {
-            DataTable dt = displayGroupMem(group);
+            DataTable dt = displayGroupMem(GroupName);
             string xml = SerializeTableToString(dt, "Members");
             return xml;
         }
@@ -219,7 +219,98 @@ namespace EasyEncWS
             string xml = SerializeTableToString(dt, "Contacts");
             return xml;
         }
+        [WebMethod]
+        public void addGroupMem(string group, string name)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            {
+                SqlCommand cmd = new SqlCommand("INSERT INTO UsersGroups(username,GroupName) SELECT username, '" + group + "' FROM Users WHERE name = '" + name + "'");
+                cmd.Connection = con;
+                cmd.Connection.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+        [WebMethod]
+        public bool checkGrpMem(string GroupName, string name)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("Select Count(*) From UsersGroups where GroupName =@group and username = @name", con))
+                {
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@group", GroupName);
+                    cmd.Connection = con;
+                    cmd.Connection.Open();
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+                        sda.SelectCommand = cmd;
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+                        if (dt.Rows[0][0].ToString() == "1")
+                        {
+                            return true;
 
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+
+
+                    }
+                }
+
+            }
+        }
+        [WebMethod]
+        public string checkGrpOwner(string GroupName)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT owner FROM Groups WHERE GroupName = @GroupName"))
+                {
+                    cmd.Parameters.AddWithValue("@GroupName", GroupName);
+                    cmd.Connection = con;
+                    cmd.Connection.Open();
+                    using (SqlDataReader rd = cmd.ExecuteReader())
+                    {
+                        rd.Read();
+                        string owner = rd.GetString(0);
+                        return owner;
+
+                    }
+                        
+                }
+                
+                
+            }
+        }
+        [WebMethod]
+        public void DeleteGrp (string group)
+        {
+            using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
+            {
+
+                SqlCommand cmd1 = new SqlCommand("DELETE FROM UsersGroups WHERE GroupName = @group");
+                cmd1.Parameters.AddWithValue("@group", group);
+                cmd1.Connection = con;
+                cmd1.Connection.Open();
+                cmd1.ExecuteNonQuery();
+                SqlCommand cmd2 = new SqlCommand("DELETE FROM Groups WHERE GroupName = @group");
+                cmd2.Parameters.AddWithValue("@group", group);
+                cmd2.Connection = con;
+                cmd2.ExecuteNonQuery();
+                //using (SqlCommand cmd = new SqlCommand("DELETE FROM UsersGroups WHERE GroupName = @group"))
+                //{
+                //    cmd.Parameters.AddWithValue("@group", group);
+                //    cmd.Connection = con;
+                //    cmd.Connection.Open();
+                //    cmd.ExecuteNonQuery();
+                //}
+
+            }
+        }
 
         [WebMethod]
         public void DeleteFile(string name, string owner, string group, string user)
