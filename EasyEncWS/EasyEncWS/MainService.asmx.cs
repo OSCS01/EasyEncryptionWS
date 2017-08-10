@@ -58,18 +58,34 @@ namespace EasyEncWS
             }
             using (SqlConnection con = new SqlConnection(System.Configuration.ConfigurationManager.ConnectionStrings["PeteDB"].ConnectionString))
             {
-                SqlDataAdapter sda = new SqlDataAdapter("Select Count(*) From Users where username ='" + username + "' and pass = '" + hashString + "'",con);
-                DataTable dt = new DataTable();
-                sda.Fill(dt);
-                if (dt.Rows[0][0].ToString() == "1")
+                using (SqlCommand cmd = new SqlCommand("Select Count(*) From Users where username = @username and pass = @hashString", con))
                 {
-                    return true;
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@hashString", hashString);
+                    cmd.Connection = con;
+                    cmd.Connection.Open();
+                    using (SqlDataAdapter sda = new SqlDataAdapter())
+                    {
+                        sda.SelectCommand = cmd;
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+                        if (dt.Rows[0][0].ToString() == "1")
+                        {
+                            return true;
+
+                        }
+                        else
+                        {
+                            return false;
+                        }
+
+                    }
+
+                        
+
 
                 }
-                else
-                {
-                    return false;
-                }
+                    
 
 
             }
